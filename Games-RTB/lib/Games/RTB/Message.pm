@@ -5,6 +5,7 @@ package Games::RTB::Message;
 use strict;
 use warnings;
 use vars qw( $VERSION );
+use Games::RTB::Type;
 
 $VERSION = 0.01;
 
@@ -96,7 +97,7 @@ RealTimeBattle game engine.
 
 sub send($) {
 	my $self = shift;
-	print STDOUT $self->type, ' ', join(' ', $self->args), "\n";
+	print $self->type, ' ', join(' ', map { $_->as_string } $self->args), "\n";
 }
 
 =head2 type

@@ -8,8 +8,8 @@ use Data::Dumper;
 
 my $msg = Games::RTB::Message::FromRobot->new(
 		debug=> 1,
-		type => 'RobotOption',
-		args => [qw( SIGNAL 2 )]
+		type => 'Name',
+		args => [qw( godsmacker )]
 ) or die 'Couldn\'t create Message object.';
 
 print Dumper($msg);

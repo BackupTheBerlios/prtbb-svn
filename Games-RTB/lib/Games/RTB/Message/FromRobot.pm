@@ -6,6 +6,7 @@ use strict;
 use warnings;
 use vars qw( @ISA $VERSION @EXPORT_OK %EXPORT_TAGS @from_robot_types );
 use Games::RTB::Message;
+use Games::RTB::Type qw( :types );
 
 require Exporter;
 
@@ -202,7 +203,8 @@ sub RobotOption($$$) {
 
 sub Name($$) {
 	return unless $#_ == 1;
-	my ($self, $name) = @_;
+	my $self = shift;
+	my $name = RTB_STRING(shift);
 
 	if($name) {
 		$self->args($name);

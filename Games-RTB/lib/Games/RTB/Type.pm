@@ -8,11 +8,14 @@ use vars qw( @ISA $VERSION @EXPORT_OK %EXPORT_TAGS @types );
 
 require Exporter;
 
-@EXPORT_OK = qw( @types );
+@ISA = qw( Exporter );
+
+@EXPORT_OK = qw( @types RTB_INT RTB_STRING RTB_HEX RTB_DOUBLE RTB_ANGLE );
 
 %EXPORT_TAGS = (
-		all		=> [ @EXPORT_OK ],
-		types	=> [qw( @types )]
+		all			=> [ @EXPORT_OK ],
+		valid_types	=> [qw( @types )],
+		types		=> [qw( RTB_INT RTB_STRING RTB_HEX RTB_DOUBLE RTB_ANGLE )]
 );
 
 @types = qw(
@@ -22,10 +25,17 @@ require Exporter;
 		Double
 		Angle
 );	#TODO Do we need this? Should this know about it's subclasses?
+	# Yeah, it should.
+
+sub RTB_INT($)		{ Games::RTB::Type::Int->new($_[0]); }
+sub RTB_STRING($)	{ Games::RTB::Type::String->new($_[0]); }
+sub RTB_HEX($)		{ Games::RTB::Type::Hex->new($_[0]); }
+sub RTB_DOUBLE($)	{ Games::RTB::Type::Double->new($_[0]); }
+sub RTB_ANGLE($)	{ Games::RTB::Type::Angle->new($_[0]); }
 
 sub new($$) {
 	my ($this, $value) = @_;
-	$class = ref($this) || $this;
+	my $class = ref($this) || $this;
 	
 	my $self = \$value;
 	bless $self, $class;
@@ -54,10 +64,10 @@ sub value($) {
 	return ${$self};
 }
 
-sub print($) {
+sub as_string($) {
 	my $self = shift;
 
-	print $self->value;
+	return ${$self};
 }
 
 package Games::RTB::Type::Int;
@@ -96,9 +106,9 @@ sub check($) {
 	return 1; #TODO
 }
 
-sub print($) {
+sub as_string($) {
 	my $self = shift;
-	printf "%x", $self->value;
+	sprintf "%x", $self->value;
 }
 
 package Games::RTB::Type::Double;
