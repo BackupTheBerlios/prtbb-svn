@@ -4,11 +4,34 @@ package Games::RTB::Message;
 
 use strict;
 use warnings;
-use vars qw( $VERSION );
+use vars qw( @ISA $VERSION @EXPORT_OK %EXPORT_TAGS );
 use Switch;
 use Games::RTB::Type qw( :types );
 
+require Exporter;
+
+@ISA = qw( Exporter );
+
 $VERSION = 0.01;
+
+@EXPORT_OK = qw( NOOBJECT ROBOT SHOT WALL COOKIE MINE LAST_OBJECT_TYPE );
+
+%EXPORT_TAGS = (
+		all				=> [ @EXPORT_OK ],
+		object_types	=> [qw( NOOBJECT ROBOT SHOT WALL COOKIE MINE
+							LAST_OBJECT_TYPE )]
+);
+
+use constant {
+	#Object types
+	NOOBJECT			=> -1,
+	ROBOT				=> 0,
+	SHOT				=> 1,
+	WALL				=> 2,
+	COOKIE				=> 3,
+	MINE				=> 4,
+	LAST_OBJECT_TYPE	=> 5
+};
 
 =head1 NAME
 
@@ -57,7 +80,7 @@ type.
 Games::RTB::Message object constructor. new() invokes the init() method with
 all its parameters and returns a reference to the object or undef if init()
 returned a false value. Every message needs a type. If there's no type given
-'empty' is used.
+'UNKNOWN' is used.
 
 =cut
 
@@ -65,7 +88,7 @@ sub new($;@) {
 	my ($this, @args) = @_;
 	my $class = ref($this) || $this;
 	my $self = {
-		type	=> 'empty',
+		type	=> 'UNKNOWN',
 		args	=> [ ],
 		debug	=> 0
 	};

@@ -14,18 +14,24 @@ require Exporter;
 
 $VERSION = 0.01;
 
-@EXPORT_OK = qw( ROBOT CANNON RADAR %from_robot_types );
+@EXPORT_OK = qw( ROBOT CANNON RADAR %from_robot_types SEND_SIGNAL
+				SEND_ROTATION_REACHED SIGNAL USE_NON_BLOCKING );
 
 %EXPORT_TAGS = (
-		all		=> [ @EXPORT_OK ],
-		parts	=> [qw( ROBOT CANNON RADAR )],
-		types	=> [qw( %from_robot_types )]
+		all					=> [ @EXPORT_OK ],
+		parts				=> [qw( ROBOT CANNON RADAR )],
+		types				=> [qw( %from_robot_types )],
+		robot_option_types	=> [qw( SEND_SIGNAL SEND_ROTATION_REACHED SIGNAL
+								USE_NON_BLOCKING )]
 );
 
 use constant {
-	ROBOT	=> 1,
-	CANNON	=> 2,
-	RADAR	=> 4
+	#RobotOption types
+	SEND_SIGNAL				=> 0,
+	SEND_ROTATION_REACHED	=> 1,
+	SIGNAL					=> 2,
+	USE_NON_BLOCKING		=> 3,
+	
 };	#TODO export properly using Exporter (How? An array or hash can't be used
 	# like ROBOT+CANNON i.e. constants can't be exported that easy using the
 	# Exporter (really? -- check that)) Uh, they are just normal typeglobs, so
@@ -117,7 +123,7 @@ Games::RTB::Message's documentation for details.
 		Debug			=> [qw( String )],
 		DebugLine		=> [qw( Double Double Double Double )],
 		DebugCircle		=> [qw( Double Double Double )],
-		empty			=> [qw( )]
+		UNKNOWN			=> [qw( )]
 );
 
 sub init($%) {	#TODO maybe move that to the Message.pm and use the
@@ -126,7 +132,7 @@ sub init($%) {	#TODO maybe move that to the Message.pm and use the
 	$self->type($args{type}) if $args{type};
 	$self->debug($args{debug}) if $args{debug};
 
-	return 1 if $self->type eq 'empty';
+	return 1 if $self->type eq 'UNKNOWN';
 	$self->Debug(__PACKAGE__.'::init: Unknown message type', $self->type),
 		return if(!grep {$_ eq $self->type} keys %from_robot_types);
 
