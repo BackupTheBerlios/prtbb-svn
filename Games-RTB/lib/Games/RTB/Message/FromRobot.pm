@@ -4,7 +4,7 @@ package Games::RTB::Message::FromRobot;
 
 use strict;
 use warnings;
-use vars qw( @ISA $VERSION @EXPORT_OK %EXPORT_TAGS @from_robot_types );
+use vars qw( @ISA $VERSION @EXPORT_OK %EXPORT_TAGS %from_robot_types );
 use Games::RTB::Message;
 use Games::RTB::Type qw( :types );
 
@@ -12,12 +12,12 @@ require Exporter;
 
 @ISA = qw( Games::RTB::Message Exporter );
 
-@EXPORT_OK = qw( ROBOT CANNON RADAR @from_robot_types );
+@EXPORT_OK = qw( ROBOT CANNON RADAR %from_robot_types );
 
 %EXPORT_TAGS = (
 		all		=> [ @EXPORT_OK ],
 		parts	=> [qw( ROBOT CANNON RADAR )],
-		types	=> [qw( @from_robot_types )]
+		types	=> [qw( %from_robot_types )]
 );
 
 use constant {
@@ -62,7 +62,7 @@ Exports constants for the parts of the robot (ROBOT, CANNON, RADAR).
 
 =head2 :types
 
-Export all valid message types for the robot to send as @from_robot_types
+Export all valid message types for the robot to send as %from_robot_types
 
 =head2 :all
 
@@ -102,41 +102,47 @@ Games::RTB::Message's documentation for details.
 
 $VERSION = 0.01;
 
-@from_robot_types = qw(
-		RobotOption
-		Name
-		Colour
-		Rotate
-		RotateTo
-		RotateAmount
-		Sweep
-		Accelerate
-		Brake
-		Shoot
-		Print
-		Debug
-		DebugLine
-		DebugCircle
-		empty
+%from_robot_types = (
+		RobotOption		=> [qw( Int Int )],
+		Name			=> [qw( String )],
+		Colour			=> [qw( Hex Hex )],
+		Rotate			=> [qw( Int Double )],
+		RotateTo		=> [qw( Int Double Double )],
+		RotateAmount	=> [qw( Int Double Double )],
+		Sweep			=> [qw( Int Double Double Double )],
+		Accelerate		=> [qw( Double )],
+		Brake			=> [qw( Double )],
+		Shoot			=> [qw( Double )],
+		Print			=> [qw( String )],
+		Debug			=> [qw( String )],
+		DebugLine		=> [qw( Double Double Double Double )],
+		DebugCircle		=> [qw( Double Double Double )],
+		empty			=> [qw( )]
 );
 
-sub init($%) {
+sub init($%) {	#TODO maybe move that to the Message.pm and use the
+				# {From,To}Robot classes simply to export constants, etc.
 	my ($self, %args) = @_;
 	$self->type($args{type}) if $args{type};
 	$self->debug($args{debug}) if $args{debug};
 
 	return 1 if $self->type eq 'empty';
 	$self->Debug(__PACKAGE__.'::init: Unknown message type', $self->type),
-		return if(!grep {$_ eq $self->type} @from_robot_types);
+		return if(!grep {$_ eq $self->type} keys %from_robot_types);
 
-	my $sub;
-	{
-		no strict 'refs';
-		$sub = \&{$self->type};
+	if( @{ $args{args} } != @{ $from_robot_types{$self->type} } ) {
+		$self->Debug( __PACKAGE__ . ':', $self->type . ':',
+				'incorrect number of arguments.', 
+				'Got', scalar @{ $args{args} },
+				'expected', @{ $from_robot_types{$self->type} } );
+		return;
 	}
 
-	return if !defined &{$sub};
-	return $self->$sub(@{ $args{args} });
+	return 1 if $self->make_args( $from_robot_types{$self->type}, $args{args} );
+
+	$self->Debug( __PACKAGE__ . ':', $self->type . ': invalid arguments',
+			'expected', join(' ', @{ $from_robot_types{$self->type} }) );
+	return;
 }
 
 =head2 type
@@ -153,265 +159,18 @@ sub type($;$) {
 	my ($self, $type) = @_;
 
 	if(defined $type) {
-		return if( !grep { $_ eq $type } @from_robot_types );
+		return if( !grep { $_ eq $type } keys %from_robot_types );
 	}
 
 	$self->SUPER::type($type);
-}
-
-=head2 RobotOption
-
-=cut
-
-sub RobotOption($$$) {
-	return unless $#_ == 2;
-	my ($self, $option, $value) = @_;
-
-	if(	$option eq 'SIGNAL' ||	#TODO What value does signal need?
-			$option eq 'SEND_SIGNAL' ||
-			$option eq 'USE_NON_BLOCKING' ) {
-
-		if($value == 0 || $value == 1) {
-			$self->args($option, $value);
-			return 1;
-		}
-
-		$self->Debug(__PACKAGE__.'::RobotOption: Invalid value for RobotOption',
-				$option, '-', $value);
-		return;
-
-	} elsif( $option eq 'SEND_ROTATION_REACHED' ) {
-
-		if($value == 0 || $value == 1 || $value == 2) {
-			$self->args($option, $value);
-			return 1;
-		}
-
-		$self->Debug(__PACKAGE__.'::RobotOption: Invalid value for RobotOption',
-				$option, '-', $value);
-		return;
-
-	}
-
-	$self->Debug(__PACKAGE__.'::RobotOption: Unknown RobotOption:', $option);
-	return;
-}
-
-=head2 Name
-
-=cut
-
-sub Name($$) {
-	return unless $#_ == 1;
-	my $self = shift;
-	my $name = RTB_STRING(shift);
-
-	if($name) {
-		$self->args($name);
-		return 1;
-	}
-
-	$self->Debug(__PACKAGE__.'::Name: Invalid name:', $name);
-	return;
-}
-
-=head2 Colour
-
-=cut
-
-sub Colour($$$) {
-	return unless $#_ == 2;
-	my ($self, $home, $away) = @_;
-
-	if($home && $away) {
-		$self->args($home, $away);
-		return 1;
-	}
-
-	$self->Debug(__PACKAGE__.'::Colour: Invalid colour(s):', $home, $away);
-	return;
-}
-
-=head2 Rotate
-
-=cut
-
-sub Rotate($$$) {
-	return unless $#_ == 2;
-	my ($self, $what, $vel) = @_;
-
-	if( $what < 1 || $what > 7 || int($what) != $what ) {
-		$self->Debug(__PACKAGE__.'::Rotate: Invalid object to rotate:', $what);
-		return;
-	}
-
-	if(!$vel) {	#TODO check $vel properly (double)
-		$self->Debug(__PACKAGE__.'::Rotate: Invalid angular velocity:', $vel);
-		return;
-	}
-
-	$self->args($what, $vel);
-	return 1;
-}
-
-=head2 RotateTo
-
-=cut
-
-sub RotateTo($$$$) {
-	return unless $#_ == 3;
-	my ($self, $what, $vel, $to) = @_;
-
-	if( $what < 1 || $what > 7 || int($what) != $what ) {
-		$self->Debug(__PACKAGE__.'::RotateTo: Invalid object to rotate:',
-				$what);
-		return;
-	}
-
-	if(!$vel) {	#TODO check $vel properly
-		$self->Debug(__PACKAGE__.'::RotateTo: Invalid angular velocity:', $vel);
-		return;
-	}
-
-	$self->args($what, $vel, $to);
-	return 1;
-}
-
-=head2 RotateAmount
-
-=cut
-
-sub RotateAmount($$$$) {
-	return unless $#_ == 3;
-	my ($self, $what, $vel, $angle) = @_;
-
-	if( $what < 1 || $what > 7 || int($what) != $what ) {
-		$self->Debug(__PACKAGE__.'::RotateAmount: Invalid object to rotate:',
-				$what);
-		return;
-	}
-
-	if(!$vel) {	#TODO check $vel properly
-		$self->Debug(__PACKAGE__.'::RotateAmount: Invalid angular velocity:',
-				$vel);
-		return;
-	}
-
-
-	if(!$angle) {	#TODO check $angle properly
-		$self->Debug(__PACKAGE__.'::RotateAmount: Invalid angule:', $angle);
-		return;
-	}
-
-	$self->args($what, $vel, $angle);
-	return 1;
-}
-
-=head2 Sweep
-
-=cut
-
-sub Sweep($$$$$) {
-	return unless $#_ == 4;
-	my ($self, $what, $vel, $l, $r) = @_;
-
-	if( $what < 1 || $what > 7 || int($what) != $what ) {
-		$self->Debug(__PACKAGE__.'::Sweep: Invalid object to rotate:', $what);
-		return;
-	}
-
-	if(!$vel) {	#TODO check $vel properly
-		$self->Debug(__PACKAGE__.'::Sweep: Invalid angular velocity:', $vel);
-		return;
-	}
-
-	if(!$l) {	#TODO check $l properly
-		$self->Debug(__PACKAGE__.'::Sweep: Invalid left angle:', $l);
-		return;
-	}
-
-	if(!$r) {	#TODO check $r properly
-		$self->Debug(__PACKAGE__.'::Sweep: Invalid right angle:', $r);
-		return;
-	}
-
-	$self->args($what, $vel, $l, $r);
-	return 1;
-}
-
-=head2 Accelerate
-
-=cut
-
-sub Accelerate($$) {
-	return unless $#_ == 1;
-	my ($self, $val) = @_;
-
-	if(!$val) {	#TODO check $val properly
-		$self->Debug(__PACKAGE__.'::Accelerate: Invalid accelaration value:',
-				$val);
-		return;
-	}
-
-	$self->args($val);
-	return 1;
-}
-
-=head2 Brake
-
-=cut
-
-sub Brake($$) {
-	return unless $#_ == 1;
-	my ($self, $val) = @_;
-
-	if(!$val) {	#TODO check $val properly
-		$self->Debug(__PACKAGE__.'::Accelerate: Invalid brake portion:', $val);
-		return;
-	}
-
-	$self->args($val);
-	return 1;
-}
-
-=head2 Shoot
-
-=cut
-
-sub Shoot($$) {
-	return unless $#_ == 1;
-	my ($self, $energy) = @_;
-
-	if(!$energy) {	#TODO check $energy properly
-		$self->Debug(__PACKAGE__.'::Shoot: Invalid energy value:', $energy);
-		return;
-	}
-
-	$self->args($energy);
-	return 1;
-}
-
-=head2 Print
-
-=cut
-
-sub Print($@) {
-	my ($self, @msg) = @_;
-
-	if(!@msg) {
-		$self->Debug(__PACKAGE__.'::FromRobot::Print: no message given');
-		return;
-	}
-
-	$self->args(@msg);
-	return 1;
 }
 
 =head2 Debug
 
 =cut
 
-sub Debug($@) {
+sub Debug($@) {	#TODO that's not needed anymore, is it? Figure out something to
+				# be able to create Debug Messages and handle errors while that.
 	my ($self, @msg) = @_;
 
 
@@ -433,70 +192,6 @@ sub Debug($@) {
 	}
 
 	$self->args(@msg);
-	return 1;
-}
-
-=head2 DebugLine
-
-=cut
-
-sub DebugLine($$$$$) {
-	return unless $#_ == 4;
-	my ($self, $angle1, $radius1, $angle2, $radius2) = @_;
-
-	if(!$angle1) {	#TODO check $angle1 properly
-		$self->Debug(__PACKAGE__.'::DebugLine: Invalid first angle:', $angle1);
-		return;
-	}
-
-	if(!$radius1) {	#TODO check $radius1 properly
-		$self->Debug(__PACKAGE__.'::DebugLine: Invalid first radius:',
-				$radius1);
-		return;
-	}
-
-	if(!$angle2) {	#TODO check $angle2 properly
-		$self->Debug(__PACKAGE__.'::DebugLine: Invalid second angle:', $angle2);
-		return;
-	}
-
-	if(!$radius2) {	#TODO check $radius2 properly
-		$self->Debug(__PACKAGE__.'::DebugLine: Invalid second radius:',
-				$radius2);
-		return;
-	}
-
-	$self->args($angle1, $radius1, $angle2, $radius2);
-	return 1;
-}
-
-=head2 DebugCircle
-
-=cut
-
-sub DebugCircle($$$$) {
-	return unless $#_ == 3;
-	my ($self, $angle, $center, $circle) = @_;
-
-	if(!$angle) {	#TODO check $angle properly
-		$self->Debug(__PACKAGE__.'::DebugCircle: Invalid center angle:',
-				$angle);
-		return;
-	}
-
-	if(!$center) {	#TODO check $center properly
-		$self->Debug(__PACKAGE__.'::DebugCircle: Invalid center radius:',
-				$center);
-		return;
-	}
-
-	if(!$circle) {	#TODO check $circle properly
-		$self->Debug(__PACKAGE__.'::DebugCircle: Invalid circle radius:',
-				$circle);
-		return;
-	}
-
-	$self->args($angle, $center, $circle);
 	return 1;
 }
 

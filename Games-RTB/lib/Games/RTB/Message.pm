@@ -5,7 +5,8 @@ package Games::RTB::Message;
 use strict;
 use warnings;
 use vars qw( $VERSION );
-use Games::RTB::Type;
+use Switch;
+use Games::RTB::Type qw( :types );
 
 $VERSION = 0.01;
 
@@ -139,6 +140,29 @@ sub args($;@) {
 	}
 }
 
+sub make_args($$$) {
+	my ($self, $types, $args) = @_;
+	my (@args, $i);
+
+	for($i = 0; $i < @{$types}; $i++) {
+		my $arg;
+		my $type = @{ $types }[$i];
+		switch($type) {
+			case 'Int'		{ $arg = RTB_INT( @{$args}[$i] ); }
+			case 'String'	{ $arg = RTB_STRING( @{$args}[$i] ); }
+			case 'Hex'		{ $arg = RTB_HEX( @{$args}[$i] ); }
+			case 'Double'	{ $arg = RTB_DOUBLE( @{$args}[$i] ); }
+			case 'Angle'	{ $arg = RTB_ANGLE( @{$args}[$i] ); }
+			else			{ return; }
+		}
+
+		return if !$arg;
+		push(@args, $arg);
+	}
+
+	$self->args(@args);
+}
+
 =head2 debug
 
   my $debug = $msg->debug();
@@ -156,32 +180,6 @@ sub debug($;$) {
 		return $self->{debug};
 	}
 }
-
-#TODO move that to a value class with iheriting Int, Double, Hex, String Class,
-# etc. revise args() and To/FromRobot.pm and, of cause, Types.pm for that.
-#sub check_value($$) {
-#	my ($val, $type) = @_;
-#
-#	return if ref $val; #Don't call as object method
-#
-#	if($type eq 'int') {
-#		return if $val !~ /^\d+$/;
-#		return if int($val) != $val;
-#		#TODO check value range
-#	} elsif($type eq 'double') {
-#		return if($val !~ /^\d+\.\d+/ && $val !~ /^\.\d+$/ && $val !~ /^\d+$/);
-#	} elsif($type eq 'hex') {
-#		#TODO
-#	} elsif($type eq 'string') {
-#
-#	} elsif($type eq 'foo') {
-#			
-#	} else {
-#
-#	}
-#
-#	return 1;
-#}
 
 =head1 AUTHOR
 

@@ -25,7 +25,6 @@ require Exporter;
 		Double
 		Angle
 );	#TODO Do we need this? Should this know about it's subclasses?
-	# Yeah, it should.
 
 sub RTB_INT($)		{ Games::RTB::Type::Int->new($_[0]); }
 sub RTB_STRING($)	{ Games::RTB::Type::String->new($_[0]); }
