@@ -1,0 +1,6 @@
+Revision history for Perl extension Games::RTB.
+
+0.01  Sat May 29 22:41:00 2004
+	- original version; created by h2xs 1.23 with options
+		-AXO -n Games::RTB
+

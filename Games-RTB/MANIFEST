@@ -1,0 +1,10 @@
+Changes
+Makefile.PL
+MANIFEST
+README
+t/Games-RTB.t
+lib/Games/RTB.pm
+lib/Games/RTB/Message.pm
+lib/Games/RTB/Message/FromRobot.pm
+lib/Games/RTB/Message/ToRobot.pm
+examples/robot.pl
