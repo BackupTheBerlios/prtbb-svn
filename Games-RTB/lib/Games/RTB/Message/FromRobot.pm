@@ -8,29 +8,31 @@ use vars qw( @ISA $VERSION @EXPORT_OK %EXPORT_TAGS %from_robot_types );
 use Games::RTB::Message;
 use Games::RTB::Type qw( :types );
 
-require Exporter;
+BEGIN {
+	require Exporter;
 
-@ISA = qw( Games::RTB::Message Exporter );
+	@ISA = qw( Games::RTB::Message Exporter );
+
+	@EXPORT_OK = qw( ROBOT CANNON RADAR %from_robot_types SEND_SIGNAL
+					SEND_ROTATION_REACHED SIGNAL USE_NON_BLOCKING );
+
+	%EXPORT_TAGS = (
+			all					=> [ @EXPORT_OK ],
+			parts				=> [qw( ROBOT CANNON RADAR )],
+			types				=> [qw( %from_robot_types )],
+			robot_option_types	=> [qw( SEND_SIGNAL SEND_ROTATION_REACHED SIGNAL
+									USE_NON_BLOCKING )]
+	);
+}
 
 $VERSION = 0.01;
-
-@EXPORT_OK = qw( ROBOT CANNON RADAR %from_robot_types SEND_SIGNAL
-				SEND_ROTATION_REACHED SIGNAL USE_NON_BLOCKING );
-
-%EXPORT_TAGS = (
-		all					=> [ @EXPORT_OK ],
-		parts				=> [qw( ROBOT CANNON RADAR )],
-		types				=> [qw( %from_robot_types )],
-		robot_option_types	=> [qw( SEND_SIGNAL SEND_ROTATION_REACHED SIGNAL
-								USE_NON_BLOCKING )]
-);
 
 use constant {
 	#RobotOption types
 	SEND_SIGNAL				=> 0,
 	SEND_ROTATION_REACHED	=> 1,
 	SIGNAL					=> 2,
-	USE_NON_BLOCKING		=> 3,
+	USE_NON_BLOCKING		=> 3
 };	#TODO export properly using Exporter (How? An array or hash can't be used
 	# like ROBOT+CANNON i.e. constants can't be exported that easy using the
 	# Exporter (really? -- check that)) Uh, they are just normal typeglobs, so
@@ -38,7 +40,6 @@ use constant {
 	#TODO maybe move that to another module because it's probably also essential
 	# for other submodules and the whole robot class but may also be used with
 	# the robot script
-
 
 =head1 NAME
 
@@ -108,20 +109,20 @@ Games::RTB::Message's documentation for details.
 =cut
 
 %from_robot_types = (
-		RobotOption		=> [qw( Int Int )],
+		RobotOption		=> [qw( OptionNr Int )],
 		Name			=> [qw( String )],
 		Colour			=> [qw( Hex Hex )],
 		Rotate			=> [qw( Int Double )],
-		RotateTo		=> [qw( Int Double Double )],
-		RotateAmount	=> [qw( Int Double Double )],
-		Sweep			=> [qw( Int Double Double Double )],
+		RotateTo		=> [qw( Int Double Angle )],
+		RotateAmount	=> [qw( Int Double Angle )],
+		Sweep			=> [qw( Int Double Angle Angle )],
 		Accelerate		=> [qw( Double )],
 		Brake			=> [qw( Double )],
 		Shoot			=> [qw( Double )],
 		Print			=> [qw( String )],
 		Debug			=> [qw( String )],
-		DebugLine		=> [qw( Double Double Double Double )],
-		DebugCircle		=> [qw( Double Double Double )],
+		DebugLine		=> [qw( Angle Double Angle Double )],
+		DebugCircle		=> [qw( Angle Double Double )],
 		UNKNOWN			=> [qw( )]
 );
 
@@ -215,30 +216,49 @@ same terms as Perl itself.
 
 =head1 SEE ALSO
 
-Games::RTB, Games::RTB::Message
+Games::RTB, Games::RTB::Message Games::RTB::Type
 
 =cut
 
-#package Games::RTB::Type::OptionNr;
+package Games::RTB::Type::OptionNr;
 
-#use strict;
-#use warnings;
-#use vars qw( @ISA );
-#use Games::RTB::Message::FromRobot qw( :robot_option_types );
+use strict;
+use warnings;
+use vars qw( @ISA );
+use Games::RTB::Message::FromRobot qw( :robot_option_types );
 
-#@ISA = qw( Games::RTB::Type::Int );
+@ISA = qw( Games::RTB::Type::Int );
 
-#push @Games::RTB::Type::types, 'OptionNr'; #Registers OptionNr type
+push @Games::RTB::Type::types, 'OptionNr'; #Registers OptionNr type
 
-#sub check($) {
-#	my $self = shift;
-#	
-#	$self->SUPER::check or return;
-#	return if(	$self->value != SEND_SIGNAL ||
-#				$self->value != SEND_ROTATION_REACHED ||
-#				$self->value != SIGNAL ||
-#				$self->value != USE_NON_BLOCKING );
-#	return 1;
-#}
+sub check($) {
+	my $self = shift;
+
+	$self->SUPER::check or return;
+	return if(	$self->value != SEND_SIGNAL &&
+				$self->value != SEND_ROTATION_REACHED &&
+				$self->value != SIGNAL &&
+				$self->value != USE_NON_BLOCKING );
+	return 1;
+}
+
+package Games::RTB::Type::RobotObjetct;
+
+use strict;
+use warnings;
+use vars qw( @ISA );
+use Games::RTB::Message qw( :robot_parts );
+
+@ISA = qw( Games::RTB::Type::Int );
+
+push @Games::RTB::Type::types, 'RobotObject';
+
+sub check($) {
+	my $self = shift;
+
+	$self->SUPER::check or return;
+	return if( $self->value > 7 || $self->value < 1 );
+	return 1;
+}
 
 1;

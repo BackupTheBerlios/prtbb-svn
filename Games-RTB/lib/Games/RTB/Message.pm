@@ -14,12 +14,14 @@ require Exporter;
 
 $VERSION = 0.01;
 
-@EXPORT_OK = qw( NOOBJECT ROBOT SHOT WALL COOKIE MINE LAST_OBJECT_TYPE );
+@EXPORT_OK = qw( NOOBJECT ROBOT SHOT WALL COOKIE MINE LAST_OBJECT_TYPE ROBOT
+				CANNON RADAR );
 
 %EXPORT_TAGS = (
 		all				=> [ @EXPORT_OK ],
 		object_types	=> [qw( NOOBJECT ROBOT SHOT WALL COOKIE MINE
-							LAST_OBJECT_TYPE )]
+							LAST_OBJECT_TYPE )],
+		robot_parts		=> [qw( ROBOT CANNON RADAR )]
 );
 
 use constant {
@@ -30,7 +32,11 @@ use constant {
 	WALL				=> 2,
 	COOKIE				=> 3,
 	MINE				=> 4,
-	LAST_OBJECT_TYPE	=> 5
+	LAST_OBJECT_TYPE	=> 5,
+	#Robot parts
+	ROBOT				=> 1,
+	CANNON				=> 2,
+	RADAR				=> 4
 };
 
 =head1 NAME
