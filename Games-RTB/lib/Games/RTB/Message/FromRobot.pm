@@ -183,7 +183,7 @@ sub RobotOption($$$) {
 
 		if($value == 0 || $value == 1 || $value == 2) {
 			$self->args($option, $value);
-		Message::FromRobot::RobotOption:	return 1;
+			return 1;
 		}
 
 		$self->Debug(__PACKAGE__.'::RobotOption: Invalid value for RobotOption',

@@ -4,6 +4,9 @@ package Games::RTB::Message;
 
 use strict;
 use warnings;
+use vars qw( $VERSION );
+
+$VERSION = 0.01;
 
 =head1 NAME
 
@@ -153,29 +156,31 @@ sub debug($;$) {
 	}
 }
 
-sub check_value($$) {
-	my ($val, $type) = @_;
-
-	return if ref $val; #Don't call as object method
-
-	if($type eq 'int') {
-		return if $val !~ /^\d+$/;
-		return if int($val) != $val;
-		#TODO check value range
-	} elsif($type eq 'double') {
-		return if($val !~ /^\d+\.\d+/ && $val !~ /^\.\d+$/ && $val !~ /^\d+$/);
-	} elsif($type eq 'hex') {
-		#TODO
-	} elsif($type eq 'string') {
-
-	} elsif($type eq 'foo') {
-			
-	} else {
-
-	}
-
-	return 1;
-}
+#TODO move that to a value class with iheriting Int, Double, Hex, String Class,
+# etc. revise args() and To/FromRobot.pm and, of cause, Types.pm for that.
+#sub check_value($$) {
+#	my ($val, $type) = @_;
+#
+#	return if ref $val; #Don't call as object method
+#
+#	if($type eq 'int') {
+#		return if $val !~ /^\d+$/;
+#		return if int($val) != $val;
+#		#TODO check value range
+#	} elsif($type eq 'double') {
+#		return if($val !~ /^\d+\.\d+/ && $val !~ /^\.\d+$/ && $val !~ /^\d+$/);
+#	} elsif($type eq 'hex') {
+#		#TODO
+#	} elsif($type eq 'string') {
+#
+#	} elsif($type eq 'foo') {
+#			
+#	} else {
+#
+#	}
+#
+#	return 1;
+#}
 
 =head1 AUTHOR
 
