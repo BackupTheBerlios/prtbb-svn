@@ -24,7 +24,7 @@ require Exporter;
 		Hex
 		Double
 		Angle
-);	#TODO Do we need this? Should this know about it's subclasses?
+);	#TODO Do we need this? Don't think so..
 
 sub RTB_INT($)		{ Games::RTB::Type::Int->new($_[0]); }
 sub RTB_STRING($)	{ Games::RTB::Type::String->new($_[0]); }
@@ -107,7 +107,7 @@ sub check($) {
 
 sub as_string($) {
 	my $self = shift;
-	sprintf "%x", $self->value;
+	return sprintf "%#x", $self->value;
 }
 
 package Games::RTB::Type::Double;

@@ -11,6 +11,8 @@ require Exporter;
 
 @ISA = qw( Games::RTB::Message Exporter );
 
+$VERSION = 0.01;
+
 @EXPORT_OK = qw( @to_robot_types );
 
 %EXPORT_TAGS = (
@@ -23,8 +25,6 @@ require Exporter;
 foo
 
 =cut
-
-$VERSION = 0.01;
 
 %to_robot_types = (
 		Initialize		=> [qw( Int )],

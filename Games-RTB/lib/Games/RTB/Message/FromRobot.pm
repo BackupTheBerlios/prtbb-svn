@@ -12,6 +12,8 @@ require Exporter;
 
 @ISA = qw( Games::RTB::Message Exporter );
 
+$VERSION = 0.01;
+
 @EXPORT_OK = qw( ROBOT CANNON RADAR %from_robot_types );
 
 %EXPORT_TAGS = (
@@ -99,8 +101,6 @@ Set or return the debug status. Inherited from Games::RTB::Message. See
 Games::RTB::Message's documentation for details.
 
 =cut
-
-$VERSION = 0.01;
 
 %from_robot_types = (
 		RobotOption		=> [qw( Int Int )],
