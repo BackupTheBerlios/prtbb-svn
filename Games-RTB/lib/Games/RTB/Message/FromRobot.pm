@@ -31,7 +31,6 @@ use constant {
 	SEND_ROTATION_REACHED	=> 1,
 	SIGNAL					=> 2,
 	USE_NON_BLOCKING		=> 3,
-	
 };	#TODO export properly using Exporter (How? An array or hash can't be used
 	# like ROBOT+CANNON i.e. constants can't be exported that easy using the
 	# Exporter (really? -- check that)) Uh, they are just normal typeglobs, so
@@ -133,7 +132,7 @@ sub init($%) {	#TODO maybe move that to the Message.pm and use the
 	$self->debug($args{debug}) if $args{debug};
 
 	return 1 if $self->type eq 'UNKNOWN';
-	$self->Debug(__PACKAGE__.'::init: Unknown message type', $self->type),
+	$self->Debug( __PACKAGE__ . '::init: Unknown message type', $self->type),
 		return if(!grep {$_ eq $self->type} keys %from_robot_types);
 
 	if( @{ $args{args} } != @{ $from_robot_types{$self->type} } ) {
@@ -192,7 +191,7 @@ sub Debug($@) {	#TODO that's not needed anymore, is it? Figure out something to
 		my $dbg = Games::RTB::Message::FromRobot->new(
 				debug	=> 0,	# must be 0 to prevent infinit loops
 				type	=> 'Debug',
-				args	=> [ @msg ]
+				args	=> [ join(' ', @msg) ]
 		)->send();
 		return;
 	}
@@ -219,5 +218,27 @@ same terms as Perl itself.
 Games::RTB, Games::RTB::Message
 
 =cut
+
+#package Games::RTB::Type::OptionNr;
+
+#use strict;
+#use warnings;
+#use vars qw( @ISA );
+#use Games::RTB::Message::FromRobot qw( :robot_option_types );
+
+#@ISA = qw( Games::RTB::Type::Int );
+
+#push @Games::RTB::Type::types, 'OptionNr'; #Registers OptionNr type
+
+#sub check($) {
+#	my $self = shift;
+#	
+#	$self->SUPER::check or return;
+#	return if(	$self->value != SEND_SIGNAL ||
+#				$self->value != SEND_ROTATION_REACHED ||
+#				$self->value != SIGNAL ||
+#				$self->value != USE_NON_BLOCKING );
+#	return 1;
+#}
 
 1;

@@ -6,7 +6,7 @@ use strict;
 use warnings;
 use vars qw( @ISA $VERSION @EXPORT_OK %EXPORT_TAGS );
 use Switch;
-use Games::RTB::Type qw( :types );
+use Games::RTB::Type; # qw( :types );
 
 require Exporter;
 
@@ -168,16 +168,19 @@ sub make_args($$$) {
 	my (@args, $i);
 
 	for($i = 0; $i < @{$types}; $i++) {
-		my $arg;
 		my $type = @{ $types }[$i];
-		switch($type) {
-			case 'Int'		{ $arg = RTB_INT( @{$args}[$i] ); }
-			case 'String'	{ $arg = RTB_STRING( @{$args}[$i] ); }
-			case 'Hex'		{ $arg = RTB_HEX( @{$args}[$i] ); }
-			case 'Double'	{ $arg = RTB_DOUBLE( @{$args}[$i] ); }
-			case 'Angle'	{ $arg = RTB_ANGLE( @{$args}[$i] ); }
-			else			{ return; }
-		}
+#		my $arg;
+#		switch($type) {
+#			case 'Int'		{ $arg = RTB_INT( @{$args}[$i] ); }
+#			case 'String'	{ $arg = RTB_STRING( @{$args}[$i] ); }
+#			case 'Hex'		{ $arg = RTB_HEX( @{$args}[$i] ); }
+#			case 'Double'	{ $arg = RTB_DOUBLE( @{$args}[$i] ); }
+#			case 'Angle'	{ $arg = RTB_ANGLE( @{$args}[$i] ); }
+#			else			{ return; }
+#		}
+
+		my $class = 'Games::RTB::Type::'.$type;
+		my $arg = $class->new( @{$args}[$i] );
 
 		return if !$arg;
 		push(@args, $arg);
